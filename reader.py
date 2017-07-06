@@ -68,6 +68,7 @@ class LogParser:
         else:
             return value
 
+    # todo: fix
     def parse_special(self, value, type_config, sub_type = None):
         if type_config['type'] == "timedelta":
             for fmt in type_config['formats']:
