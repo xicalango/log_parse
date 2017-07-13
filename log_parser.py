@@ -42,11 +42,12 @@ class LogParser:
 
                 fields = match.groupdict()
 
-                for (field_id, field_type) in self.line_types[line_type_id]['fields'].items():
-                    if fields[field_id] == None:
-                        continue
+                if 'fields' in self.line_types[line_type_id]:
+                    for (field_id, field_type) in self.line_types[line_type_id]['fields'].items():
+                        if fields[field_id] == None:
+                            continue
 
-                    fields[field_id] = self.parse_field(fields[field_id], field_type)
+                        fields[field_id] = self.parse_field(fields[field_id], field_type)
 
                 match_data = {
                         "line": line_counter,
@@ -105,6 +106,7 @@ class TimeDeltaEncoder(json.JSONEncoder):
         if isinstance(obj, timedelta):
             return obj.total_seconds()
         return json.JSONEncoder.default(self, obj)
+
 
 def main():
 
