@@ -1,0 +1,29 @@
+line_types:
+  gc:
+    name: GC
+    regex: '^(?P<time>[0-9]+\.[0-9]+): \[(?P<type>(Full)? ?GC) (\(.*\) )?(\[.*\])* (?P<before>[0-9]+)K->(?P<after>[0-9]+)K\((?P<cap>[0-9]+)K\).*(?P<time_spent>[0-9]+\.[0-9]+) secs\] \[.*\]'
+    fields:
+      time: timestamp
+      before: memory::kb
+      after: memory::kb
+      cap: memory::kb
+      time_spent: number
+      
+
+types:
+  timestamp:
+    type: timedelta
+    formats:
+    - name: gc
+      parser: float
+  memory:
+    type: number
+    formats:
+    - name: kb
+      normalize: 'value * 1024'
+
+
+args:
+  - name: zero
+    default: "00:00:00,000"
+
