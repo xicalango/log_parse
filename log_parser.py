@@ -16,8 +16,11 @@ class LogParser:
 
     def __checkArgs(self):
         for arg in self.config['args']:
-            if arg not in self.args:
-                raise Exception("required arg: " + arg)
+            if arg['name'] not in self.args:
+                if arg['default'] is None:
+                    raise Exception("required arg: " + arg)
+                else:
+                    self.args[arg['name']] = arg['default']
 
     def __extractRegexes(self):
         regexes = []
@@ -83,7 +86,7 @@ class LogParser:
                 except ValueError:
                     pass
 
-            raise Exception("no parser found")
+            raise Exception("no parser found for: {} {} {}".format(value, type_config, sub_type))
 
         elif type_config['type'] == "number":
             for fmt in type_config['formats']: 
