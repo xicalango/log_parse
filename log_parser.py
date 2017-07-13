@@ -31,9 +31,18 @@ class LogParser:
 
         return regexes
     
-    def parse(self, handle):
+    def parse(self, handle, flat = False):
         matches = []
         line_counter = 0
+        
+        if flat:
+            line_name = "__line__"
+            type_name = "__type__"
+        else:
+            line_name = "line"
+            type_name = "type"
+
+
         for line in handle:
             line_counter += 1
 
@@ -53,10 +62,15 @@ class LogParser:
                         fields[field_id] = self.parse_field(fields[field_id], field_type)
 
                 match_data = {
-                        "line": line_counter,
-                        "type": line_type_id,
-                        "fields": fields,
+                        line_name: line_counter,
+                        type_name: line_type_id,
                 }
+
+                if flat:
+                    match_data.update(fields)
+                else:
+                    match_data["fields"] = fields
+
                 matches.append(match_data)
 
         return matches
@@ -83,10 +97,11 @@ class LogParser:
                         return self.normalize(timedelta(seconds = float(value)), fmt)
                     elif fmt['parser'] == 'datetime':
                         return self.normalize(datetime.strptime(value, fmt['format']) - datetime(1900, 1, 1), fmt)
-                except ValueError:
+                except ValueError as e:
+                    #print("Can't parse with {}, because {}".format(fmt['parser'], e))
                     pass
 
-            raise Exception("no parser found for: {} {} {}".format(value, type_config, sub_type))
+            raise Exception("no parser found for: '{}' {} {}".format(value, type_config, sub_type))
 
         elif type_config['type'] == "number":
             for fmt in type_config['formats']: 
@@ -115,7 +130,8 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument("file")
-    parser.add_argument("--config", default = "config.yml")
+    parser.add_argument("--config", '-c', default = "config.yml")
+    parser.add_argument("--flatten", '-f', action = 'store_true')
     parser.add_argument("kvs", nargs='*', type=lambda x: x.split('=', 1))
 
     args = parser.parse_args()
@@ -128,7 +144,7 @@ def main():
     matches = []
 
     with open(args.file, "r") as f:
-        matches = log_parser.parse(f)
+        matches = log_parser.parse(f, flat = args.flatten)
 
     print(json.dumps(matches, indent=2, cls=TimeDeltaEncoder))
 
